@@ -5,7 +5,12 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: 'https://your-frontend-domain.com', // Replace with your actual frontend domain
+  methods: ['POST', 'GET', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 app.use(express.json()); // This was missing
 
 // Email Route
