@@ -1,23 +1,12 @@
-import express from 'express';
-import cors from 'cors';
 import { createTransport } from 'nodemailer';
-import * as dotenv from 'dotenv';
-dotenv.config();
 
-const app = express();
-app.use(cors({
-  origin: 'https://your-frontend-domain.com', // Replace with your actual frontend domain
-  methods: ['POST', 'GET', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+export default async (req, res) => {
+  if (req.method !== 'POST') {
+    return res.status(405).send({ message: 'Method Not Allowed' });
+  }
 
-app.use(express.json()); // This was missing
-
-// Email Route
-app.post('/send-email', async (req, res) => {
   const { name, email, phone, cart, referral } = req.body;
 
-  // Create order summary
   const orderSummary = cart.map(item => `${item.name} - ${item.price.toLocaleString()} NGN`).join('\n');
   const emailBody = `
     Hello ${name},
@@ -34,24 +23,21 @@ app.post('/send-email', async (req, res) => {
     George Wood Casket and Furniture
   `;
 
-  // Create a transporter object using SMTP transport
   let transporter = createTransport({
-    service: 'gmail', // Use your email service provider
+    service: 'gmail',
     auth: {
-      user: process.env.EMAIL_USER, // Replace with your email
-      pass: process.env.EMAIL_PASS, // Replace with your email password or app password
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
     },
   });
 
-  // Setup email data
   let mailOptions = {
-    from: '"George Wood Casket and Furniture" <georgewoodcasketemail@gmail.com>', // Sender address
-    to: email, // Receiver's email
+    from: '"George Wood Casket and Furniture" <georgewoodcasketemail@gmail.com>',
+    to: email,
     subject: 'Order Confirmation',
-    text: emailBody, // Plain text body
+    text: emailBody,
   };
 
-  // Send mail with defined transport object
   try {
     let info = await transporter.sendMail(mailOptions);
     res.status(200).send({ message: 'Email sent successfully', info });
@@ -59,7 +45,4 @@ app.post('/send-email', async (req, res) => {
     console.error('Error sending email:', error);
     res.status(500).send({ message: 'Error sending email', error });
   }
-});
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+};
