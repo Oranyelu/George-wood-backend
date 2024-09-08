@@ -7,7 +7,22 @@ export default async (req, res) => {
 
   const { name, email, phone, cart, referral } = req.body;
 
-  const orderSummary = cart.map(item => `${item.name} - ${item.price.toLocaleString()} NGN`).join('\n');
+  // Log the request body to debug issues
+  console.log('Request Body:', req.body);
+
+  // Validate input
+  if (!name || !email || !phone || !cart || !Array.isArray(cart)) {
+    return res.status(400).send({ message: 'Missing or invalid fields' });
+  }
+
+  // Ensure cart items are properly formatted
+  const orderSummary = cart.map(item => {
+    if (!item.name || typeof item.price !== 'number') {
+      return 'Invalid item data';
+    }
+    return `${item.name} - ${item.price.toLocaleString()} NGN`;
+  }).join('\n');
+
   const emailBody = `
     Hello ${name},
 
@@ -15,7 +30,7 @@ export default async (req, res) => {
 
     ${orderSummary}
 
-    Referral: ${referral}
+    Referral: ${referral || 'N/A'}
 
     We will contact you shortly to confirm your order.
 
