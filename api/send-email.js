@@ -5,25 +5,14 @@ export default async (req, res) => {
     return res.status(405).send({ message: 'Method Not Allowed' });
   }
 
-  // Log the request body for debugging
-  console.log('Request Body:', req.body);
+  const { firstName, lastName, email, phone, cart, referral } = req.body;
 
-  const { name, email, phone, cart, referral } = req.body;
-
-  // Validate the request body
-  if (!name || !email || !phone || !cart || !Array.isArray(cart) || cart.length === 0) {
+  if (!firstName || !lastName || !email || !phone || !cart || !Array.isArray(cart) || cart.length === 0) {
     return res.status(400).send({ message: 'Missing or invalid fields' });
   }
 
-  // Validate cart items
-  for (const item of cart) {
-    if (!item.name || typeof item.price !== 'number') {
-      return res.status(400).send({ message: 'Invalid cart item data' });
-    }
-  }
-
+  const name = `${firstName} ${lastName}`;
   const orderSummary = cart.map(item => `${item.name} - ${item.price.toLocaleString()} NGN`).join('\n');
-
   const emailBody = `
     Hello ${name},
 
@@ -31,7 +20,7 @@ export default async (req, res) => {
 
     ${orderSummary}
 
-    Referral: ${referral || 'N/A'}
+    Referral: ${referral}
 
     We will contact you shortly to confirm your order.
 
