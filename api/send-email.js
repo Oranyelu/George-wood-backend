@@ -7,6 +7,9 @@ const app = express();
 // Enable CORS for all routes
 app.use(cors());
 
+// Parse JSON bodies
+app.use(express.json());
+
 app.post('/api/send-email', async (req, res) => {
   if (req.method !== 'POST') {
     return res.status(405).send({ message: 'Method Not Allowed' });
