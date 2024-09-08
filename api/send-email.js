@@ -1,6 +1,13 @@
+import express from 'express';
+import cors from 'cors';
 import { createTransport } from 'nodemailer';
 
-export default async (req, res) => {
+const app = express();
+
+// Enable CORS for all routes
+app.use(cors());
+
+app.post('/api/send-email', async (req, res) => {
   if (req.method !== 'POST') {
     return res.status(405).send({ message: 'Method Not Allowed' });
   }
@@ -50,4 +57,6 @@ export default async (req, res) => {
     console.error('Error sending email:', error);
     res.status(500).send({ message: 'Error sending email', error });
   }
-};
+});
+
+export default app;
