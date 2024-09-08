@@ -5,17 +5,16 @@ export default async (req, res) => {
     return res.status(405).send({ message: 'Method Not Allowed' });
   }
 
-  const { name, email, phone, cart, referral } = req.body;
-
-  // Log the request body to debug issues
+  // Log the request body for debugging
   console.log('Request Body:', req.body);
 
-  // Validate input
-  if (!name || !email || !phone || !cart || !Array.isArray(cart)) {
+  const { name, email, phone, cart, referral } = req.body;
+
+  // Validate the request body
+  if (!name || !email || !phone || !cart || !Array.isArray(cart) || cart.length === 0) {
     return res.status(400).send({ message: 'Missing or invalid fields' });
   }
 
-  // Ensure cart items are properly formatted
   const orderSummary = cart.map(item => {
     if (!item.name || typeof item.price !== 'number') {
       return 'Invalid item data';
