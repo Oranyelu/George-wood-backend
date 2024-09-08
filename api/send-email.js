@@ -1,7 +1,7 @@
-const express = require('express');
-const cors = require('cors');
-const nodemailer = require('nodemailer');
-const crypto = require('crypto');
+import express from 'express';
+import cors from 'cors';
+import nodemailer from 'nodemailer';
+import crypto from 'crypto';
 
 const app = express();
 
