@@ -12,7 +12,7 @@ export default async (req, res) => {
 
   // Validate the request body
   if (!name || !email || !phone || !cart || !Array.isArray(cart) || cart.length === 0) {
-    return res.status(400).send({ message: 'Missing or invalid fields' });
+    return res.status(400).send({ message: 'Miss or invalid fields' });
   }
 
   // Validate cart items
