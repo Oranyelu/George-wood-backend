@@ -11,7 +11,7 @@ export default async (req, res) => {
   const { name, email, phone, cart, referral } = req.body;
 
   // Validate the request body
-  if (!name || !email || !phone || !cart || !Array.isArray(cart) || cart.length === 0) {
+  if (!name || !email || !phone || !cart || !Array.isArray(cart)) {
     return res.status(400).send({ message: 'Missing or invalid fields' });
   }
 
