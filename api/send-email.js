@@ -42,13 +42,13 @@ app.post('/api/send-email', async (req, res) => {
         const transporter = nodemailer.createTransport({
             service: 'Gmail',
             auth: {
-                user: 'your-email@gmail.com',
-                pass: 'your-email-password'
+              user: process.env.EMAIL_USER,
+              pass: process.env.EMAIL_PASS
             }
         });
 
         const mailOptions = {
-            from: 'your-email@gmail.com',
+          from: process.env.EMAIL_USER,
             to: email,
             subject: 'Order Confirmation',
             text: emailBody
