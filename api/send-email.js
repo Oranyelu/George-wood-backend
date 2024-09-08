@@ -1,65 +1,69 @@
-import express from 'express';
-import cors from 'cors';
-import { createTransport } from 'nodemailer';
+const express = require('express');
+const cors = require('cors');
+const nodemailer = require('nodemailer');
+const crypto = require('crypto');
 
 const app = express();
 
-// Enable CORS for all routes
 app.use(cors());
-
-// Parse JSON bodies
 app.use(express.json());
 
 app.post('/api/send-email', async (req, res) => {
-  if (req.method !== 'POST') {
-    return res.status(405).send({ message: 'Method Not Allowed' });
-  }
+    try {
+        const { firstName, lastName, email, phone, cart, referral } = req.body;
 
-  const { firstName, lastName, email, phone, cart, referral } = req.body;
+        if (!firstName || !lastName || !email || !phone || !cart) {
+            return res.status(400).json({ message: "Missing required fields" });
+        }
 
-  if (!firstName || !lastName || !email || !phone || !cart || !Array.isArray(cart) || cart.length === 0) {
-    return res.status(400).send({ message: 'Missing or invalid fields' });
-  }
+        const orderSummary = cart.map(item => `${item.name} - ${item.price} NGN`).join(", ");
+        const totalPrice = cart.reduce((total, item) => total + item.price, 0);
+        const trackingId = crypto.randomBytes(8).toString('hex'); // Generate unique ID
 
-  const name = `${firstName} ${lastName}`;
-  const orderSummary = cart.map(item => `${item.name} - ${item.price.toLocaleString()} NGN`).join('\n');
-  const emailBody = `
-    Hello ${name},
+        const emailBody = `
+          Hello ${firstName} ${lastName},
+          Thank you for your order!
+          Here is a summary of your order:
+          ${orderSummary}
+          Total Price: ${totalPrice.toLocaleString()} NGN
+          Referred By: ${referral}
 
-    Thank you for your order. Here is the summary of your purchase:
+          To complete your order, please make a payment of the sum Total Price: ${totalPrice.toLocaleString()} NGN to the account below.
 
-    ${orderSummary}
+          George Chiemerie Chime 
+          2198210889
+          United Bank of Africa (UBA)
 
-    Referral: ${referral}
+          Here is your tracking ID to track the progress of your order: ${trackingId}
 
-    We will contact you shortly to confirm your order.
+          We will contact you at ${phone}.
+        `;
 
-    Best regards,
-    George Wood Casket and Furniture
-  `;
+        const transporter = nodemailer.createTransport({
+            service: 'Gmail',
+            auth: {
+                user: 'your-email@gmail.com',
+                pass: 'your-email-password'
+            }
+        });
 
-  let transporter = createTransport({
-    service: 'gmail',
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-  });
+        const mailOptions = {
+            from: 'your-email@gmail.com',
+            to: email,
+            subject: 'Order Confirmation',
+            text: emailBody
+        };
 
-  let mailOptions = {
-    from: '"George Wood Casket and Furniture" <georgewoodcasketemail@gmail.com>',
-    to: email,
-    subject: 'Order Confirmation',
-    text: emailBody,
-  };
+        await transporter.sendMail(mailOptions);
 
-  try {
-    let info = await transporter.sendMail(mailOptions);
-    res.status(200).send({ message: 'Email sent successfully', info });
-  } catch (error) {
-    console.error('Error sending email:', error);
-    res.status(500).send({ message: 'Error sending email', error });
-  }
+        res.status(200).json({ message: 'Order placed successfully! A confirmation email has been sent.', trackingId });
+    } catch (error) {
+        console.error('Error sending email:', error);
+        res.status(500).json({ message: 'There was an error processing your request.' });
+    }
 });
 
-export default app;
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});
