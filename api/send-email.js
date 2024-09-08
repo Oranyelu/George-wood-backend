@@ -15,12 +15,14 @@ export default async (req, res) => {
     return res.status(400).send({ message: 'Missing or invalid fields' });
   }
 
-  const orderSummary = cart.map(item => {
+  // Validate cart items
+  for (const item of cart) {
     if (!item.name || typeof item.price !== 'number') {
-      return 'Invalid item data';
+      return res.status(400).send({ message: 'Invalid cart item data' });
     }
-    return `${item.name} - ${item.price.toLocaleString()} NGN`;
-  }).join('\n');
+  }
+
+  const orderSummary = cart.map(item => `${item.name} - ${item.price.toLocaleString()} NGN`).join('\n');
 
   const emailBody = `
     Hello ${name},
