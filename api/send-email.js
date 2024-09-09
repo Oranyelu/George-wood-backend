@@ -1,15 +1,37 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import express from 'express';
 import cors from 'cors';
 import nodemailer from 'nodemailer';
 import crypto from 'crypto';
 import { MongoClient } from 'mongodb';
+import connectDB from '../config/db.js';
+
+connectDB();
 
 const app = express();
-const uri = process.env.MONGODB_URI;
-const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
-
 app.use(cors());
 app.use(express.json());
+
+// Database connection setup
+const uri = process.env.MONGODB_URI;
+if (!uri) {
+    throw new Error("MONGODB_URI is not defined in the environment variables.");
+  }
+const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+
+async function connectToDatabase() {
+    try {
+        await client.connect();
+        console.log("Connected to MongoDB");
+    } catch (error) {
+        console.error("Failed to connect to MongoDB:", error);
+        process.exit(1);
+    }
+}
+
+connectToDatabase();
 
 app.post('/api/send-email', async (req, res) => {
     try {
@@ -59,32 +81,26 @@ app.post('/api/send-email', async (req, res) => {
 
         await transporter.sendMail(mailOptions);
 
-        // Store the order in the database
-        await client.connect();
+        // Save order to MongoDB
         const database = client.db('orderDB');
         const orders = database.collection('orders');
-
-        const orderData = {
+        await orders.insertOne({
             trackingId,
             firstName,
             lastName,
             email,
             phone,
-            orderSummary,
-            totalPrice,
+            cart,
             referral,
-            status: 'Pending', // Order status, can be 'Pending', 'Processing', 'Completed', etc.
+            totalPrice,
+            status: 'Pending',
             createdAt: new Date(),
-        };
-
-        await orders.insertOne(orderData);
+        });
 
         res.status(200).json({ message: 'Order placed successfully! A confirmation email has been sent.', trackingId });
     } catch (error) {
         console.error('Error sending email:', error);
         res.status(500).json({ message: 'There was an error processing your request.' });
-    } finally {
-        await client.close();
     }
 });
 

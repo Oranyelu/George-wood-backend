@@ -1,22 +1,37 @@
-app.get('/api/order-status/:trackingId', async (req, res) => {
-    const { trackingId } = req.params;
 
-    try {
-        await client.connect();
-        const database = client.db('orderDB');
-        const orders = database.collection('orders');
 
-        const order = await orders.findOne({ trackingId });
+import { MongoClient } from 'mongodb';
+import dotenv from 'dotenv';
+dotenv.config();
+import connectDB from '../config/db.js';
 
-        if (!order) {
-            return res.status(404).json({ message: 'Order not found' });
-        }
+connectDB();
 
-        res.status(200).json({ order });
-    } catch (error) {
-        console.error('Error fetching order status:', error);
-        res.status(500).json({ message: 'There was an error processing your request.' });
-    } finally {
-        await client.close();
-    }
-});
+console.log('MONGODB_URI:', process.env.MONGODB_URI); // Check if this logs the correct URI
+
+// Rest of the code
+
+const uri = process.env.MONGODB_URI;
+
+if (!uri) {
+  console.error('MONGODB_URI is not defined in the .env file');
+  process.exit(1);
+}
+
+const client = new MongoClient(uri);
+
+export async function getOrderStatus(trackingId) {
+  try {
+    await client.connect();
+    const database = client.db('orderTracking');
+    const orders = database.collection('orders');
+
+    const order = await orders.findOne({ trackingId });
+    return order;
+  } catch (error) {
+    console.error('Error fetching order status:', error);
+    throw error;
+  } finally {
+    await client.close();
+  }
+}
