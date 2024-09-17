@@ -49,7 +49,7 @@ router.post('/admin-login', async (req, res) => {
     // Compare the password
     const isPasswordMatch = await bcrypt.compare(password, admin.password);
     if (!isPasswordMatch) {
-      return res.status(401).json({ message: 'Invalid credentials' });
+      return res.status(401).json({ message: 'Invalid password' });
     }
 
     // Create and send JWT token

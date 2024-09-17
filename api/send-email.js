@@ -8,30 +8,27 @@ import crypto from 'crypto';
 import { MongoClient } from 'mongodb';
 import connectDB from '../config/db.js';
 
-connectDB();
-
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Database connection setup
-const uri = process.env.MONGODB_URI;
-if (!uri) {
-    throw new Error("MONGODB_URI is not defined in the environment variables.");
-  }
-const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+const client = new MongoClient(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
 
+// Initialize the database connection
+let database;
 async function connectToDatabase() {
-    try {
-        await client.connect();
-        console.log("Connected to MongoDB");
-    } catch (error) {
-        console.error("Failed to connect to MongoDB:", error);
-        process.exit(1);
+    if (!database) {
+        try {
+            await client.connect();
+            database = client.db('orderDB');
+            console.log("Connected to MongoDB");
+        } catch (error) {
+            console.error("Failed to connect to MongoDB:", error);
+            process.exit(1);
+        }
     }
+    return database;
 }
-
-connectToDatabase();
 
 app.post('/api/send-email', async (req, res) => {
     try {
@@ -79,25 +76,30 @@ app.post('/api/send-email', async (req, res) => {
             text: emailBody
         };
 
+        // Send the confirmation email
         await transporter.sendMail(mailOptions);
 
         // Save order to MongoDB
-        const database = client.db('orderDB');
-        const orders = database.collection('orders');
-        await orders.insertOne({
-            trackingId,
-            firstName,
-            lastName,
-            email,
-            phone,
-            cart,
-            referral,
-            totalPrice,
-            status: 'Pending',
-            createdAt: new Date(),
-        });
-
-        res.status(200).json({ message: 'Order placed successfully! A confirmation email has been sent.', trackingId });
+        try {
+            const database = await connectToDatabase();
+            const orders = database.collection('orders');
+            await orders.insertOne({
+                trackingId,
+                firstName,
+                lastName,
+                email,
+                phone,
+                cart,
+                referral,
+                totalPrice,
+                status: 'Pending',
+                createdAt: new Date(),
+            });
+            res.status(200).json({ message: 'Order placed successfully! A confirmation email has been sent.', trackingId });
+        } catch (error) {
+            console.error('Error saving order to the database:', error);
+            res.status(500).json({ message: 'Error saving order to database' });
+        }
     } catch (error) {
         console.error('Error sending email:', error);
         res.status(500).json({ message: 'There was an error processing your request.' });
