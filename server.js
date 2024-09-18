@@ -1,9 +1,9 @@
 import express from 'express';
-import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import cors from 'cors';
-import adminRoutes from './routes/admin.js';
+import adminRoutes from './routes/admin-routes.js';
 import emailRoutes from './routes/email.js'; // Import email routes
+import connectDB from './config/db.js'; // Move this up for consistency
 
 dotenv.config();
 
@@ -17,15 +17,14 @@ app.use(cors({
 app.use(express.json());
 
 // Set up MongoDB connection
-import connectDB from './config/db.js';
 connectDB();
 
 // Routes
-app.use('/api/admin', adminRoutes);
-app.use('/api/send-email', emailRoutes); // Use email routes
+app.use('/routes/admin-routes.js', adminRoutes);
+app.use('./routes/email.js', emailRoutes); // Use email routes
 
 // Start server
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
