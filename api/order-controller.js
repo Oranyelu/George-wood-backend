@@ -33,7 +33,7 @@ const createOrder = async (req, res) => {
     const { trackingId } = req.params;
   
     try {
-      const order = await Order.findOne({ trackingId });
+      const order = await order.findOne({ trackingId });
       if (!order) return res.status(404).json({ message: 'Order not found' });
       res.status(200).json(order);
     } catch (error) {
@@ -44,7 +44,7 @@ const createOrder = async (req, res) => {
 
   const getAllOrders = async (req, res) => {
     try {
-      const orders = await Order.find();
+      const orders = await orders.find();
       res.status(200).json(orders);
     } catch (error) {
       res.status(500).json({ message: 'Error fetching orders', error });

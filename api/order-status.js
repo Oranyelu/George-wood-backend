@@ -12,7 +12,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const client = new MongoClient(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
+const client = new MongoClient(process.env.MONGODB_URI);
 
 // Initialize the database connection
 let database;
