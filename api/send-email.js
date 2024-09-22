@@ -20,160 +20,64 @@ app.post('/api/send-email', async (req, res) => {
 
         const orderSummary = cart.map(item => `<li>${item.name} - ${item.price.toLocaleString()} NGN</li>`).join("");
         const totalPrice = cart.reduce((total, item) => total + item.price, 0);
-        const trackingId = crypto.randomBytes(8).toString('hex'); // Generate unique ID
+        const trackingId = crypto.randomBytes(8).toString('hex'); // Generate unique tracking ID
 
-        // Styled HTML email body
-        const emailBody = `
-         <div
-      style="
-        font-family: Montserrat, sans-serif;
-        color: #000000;
-        background-color: #ffffff;
-        row-gap: 15px;
-      "
-    >
-      <header
-        style="
-          border-color: #135b3a;
-          border-width: 3px;
-          border-style: solid;
-          border-radius: 10px;
-          display: flex;
-          justify-content: space-between;
-          padding-inline: 10px;
-        "
-      >
-        <h2 style="color: #135b3a">ORDER SUMMARY</h2>
-        <h4>Invoice</h4>
-      </header>
-      <div
-        style="
-          background-color: #f0b52e;
-          border-radius: 0px 50px 50px 0px;
-          width: 80vw;
-          padding-left: 15px;
-        "
-      >
-        <h3>Hello ${firstName} ${lastName},</h3>
-        <p>
-          Thank you for your order! Here is a summary of your order: <br />
-          Tracking Id: <span style="font-weight: bold">${trackingId}</span>
-        </p>
-      </div>
-      <hr style="border: 1px solid #000000; width: 90vw" />
-      <div style="margin-inline-start: 30px; margin-inline-end: 30px">
-        <b>Items</b>
-        <ul style="padding-left: 20px">
-          ${orderSummary}
-        </ul>
-        <p><strong>Total Price: ${totalPrice.toLocaleString()} NGN</strong></p>
-        <p style="text-align-last: right">
-          <strong>Referred By:</strong> ${referral || 'N/A'}
-        </p>
-      </div>
-
-      <p>
-        To complete your order, please make a payment of
-        <strong>${totalPrice.toLocaleString()} NGN</strong>
-        to the account below:
-      </p>
-      <p style="font-size: 1.1em; font-weight: bold">
-        NO: 2198210889 <br />
-        Name: George Chiemerie Chime, <br />
-        Bank: United Bank of Africa (UBA).
-      </p>
-      <div>
-        <p>We will contact you at: <strong>${phone}</strong>.</p>
-        <p
-          style="
-            font-size: 0.9em;
-            text-align-last: right;
-            margin-inline-end: 20px;
-          "
-        >
-          Thank you for choosing us!
-        </p>
-        <hr style="border: 1px solid #000000; width: 90vw" />
-      </div>
-
-      <section style="display: flex; flex-direction: column;">
-        <article
-          style="
-            border-color: #000000;
-            border-width: 2px;
-            border-style: solid;
-            border-radius: 15px;
-            padding: 10px;
-            width: 70vw;
-            height: 10rem;
-            position: absolute;
-          "
-        >
-          <a href="" style="color: #000000; font-weight: bold;">Discover The Book Of Life.</a>
-          <p>
-            "Keep their memory alive—submit an application to feature your loved
-            one in the Book of Life."
-          </p>
-          <a href="" style="color: #000000">Submit a form.</a>
-        </article>
-        <article
-          style="background-color: #f0b52e; border-radius: 15px; padding: 10px;
-          width: 60vw;
-          z-index: 3;
-          align-self: end;
-          position: absolute;
-          margin-top: 6rem;
-          "
-        >
-          <a href="" style="color: #000000; font-weight: bold;">GWCF-Foundation.</a>
-          <h4 style="color: #fff">GIVE A HAND, LIFT A SPIRIT</h4>
-          <p style="color: #135b3a;">
-            “Your donation is a heartfelt gesture that uplifts spirits,
-            signaling a shared journey of hope and empowerment.”
-          </p>
-          <a href="" style="color: #000000">
-            <p style="text-align-last: right; font-weight: bold;">Donate Now</p></a
-          >
-        </article>
-        <a href=""
-          ><button
-            style="
-              background-color: #135b3a;
-              color: #fff;
-              border-radius: 10px;
-              font-weight: bold;
-              padding: 15px;
-              font-size: 1rem;
-              border-style: none;
-              margin-top: 15rem;
-            "
-          >
-            Rate Us Now
-          </button></a
-        >
-      </section>
-      <section style="background-color: #135b3a; color: #fff; padding: 20px; margin-top: 15px;">
-        <div  style="display: flex; flex-direction: row; justify-content: space-between;">
-          <main>
-            <img src="../assets/footer logo George wood.png">
-            
-          </main>
-          <article style="font-size: 0.65rem;">Contact Us: <br>
-            Call - 08143904414 <br> <br>
-            Whatsapp - +2348143904414 <br>
-            Instagram - @georgewoodcasket <br>
-            Email - georgewoodcasket@gamil.com <br>
-            Address - No. 2 Umudo Street, Okwojo Ngwo Enugu.</article>
+        // First email (to customer)
+        const customerEmailBody = `
+        <div style="font-family: Arial, sans-serif; color: #000; background-color: #fff; padding: 20px; max-width: 600px; margin: 0 auto;">
+            <header style="border: 2px solid #135b3a; border-radius: 10px; padding: 10px; text-align: center;">
+                <h2 style="color: #135b3a; margin: 0;">ORDER SUMMARY</h2>
+                <h4 style="margin: 0;">Invoice</h4>
+            </header>
+            <div style="background-color: #f0b52e; border-radius: 10px; padding: 15px; margin-top: 15px;">
+                <h3>Hello ${firstName} ${lastName},</h3>
+                <p>Below is the summary of your order:<br />
+                <strong>Tracking ID:</strong> ${trackingId}</p>
+            </div>
+            <div style="margin-top: 15px;">
+                <b>Items:</b>
+                <ul>${orderSummary}</ul>
+                <p><strong>Total Price: ${totalPrice.toLocaleString()} NGN</strong></p>
+                <p><strong>Referred By:</strong> ${referral || 'N/A'}</p>
+            </div>
+            <div style="margin-top: 15px;">
+                <p>To complete your order, please make a payment of 
+                <strong>${totalPrice.toLocaleString()} NGN</strong> to the account below:</p>
+                <p style="font-size: 1.1em;">
+                    <strong>NO:</strong> 2198210889 <br />
+                    <strong>Name:</strong> George Chiemerie Chime <br />
+                    <strong>Bank:</strong> United Bank of Africa (UBA)
+                </p>
+            </div>
+            <p>We will contact you at: <strong>${phone}</strong>.</p>
+            <p style="font-size: 0.9em; text-align: right;">Thank you for choosing us!</p>
+            <footer style="background-color: #135b3a; color: #fff; padding: 10px; margin-top: 15px; text-align: center;">
+                <p>Contact Us: <br />
+                    Call - 08143904414 | Whatsapp - +2348143904414 | Email - georgewoodcasket@gmail.com <br />
+                    Address - No. 2 Umudo Street, Okwojo Ngwo Enugu.
+                </p>
+                <p style="font-size: 0.8em;">&copy; 2024 George Wood Casket and Furniture. All Rights Reserved.</p>
+            </footer>
         </div>
-        <div style="font-size: 0.65rem;">
-          <p style="margin: 15px; font-weight: 100;">This email and its attachments is confidential and are intended solely for the use of the intended recipient. We will not share your information to any third party and we maintain our privacy.
-           <br> You received this email because you recently made a purchase on our website https://georgewoodcasket.com</p>
-        </div>
-        <footer style="display: flex; align-items: baseline; justify-content: center; font-size: 0.65rem;"><p>All Rights reserved George Wood Casket and Furniture 2024.</p></footer>
-      </section>
-    </div>
         `;
 
+        // Second email (to georgechime91@icloud.com)
+        const adminEmailBody = `
+        <div style="font-family: Arial, sans-serif; color: #000; background-color: #fff; padding: 20px; max-width: 600px; margin: 0 auto;">
+            <header style="border: 2px solid #135b3a; border-radius: 10px; padding: 10px; text-align: center;">
+                <h2 style="color: #135b3a; margin: 0;">NEW ORDER</h2>
+            </header>
+            <div style="margin-top: 15px;">
+                <p><strong>Customer Name:</strong> ${firstName} ${lastName}</p>
+                <p><strong>Tracking ID:</strong> ${trackingId}</p>
+                <p><strong>Items Ordered:</strong></p>
+                <ul>${orderSummary}</ul>
+                <p><strong>Total Price:</strong> ${totalPrice.toLocaleString()} NGN</p>
+            </div>
+        </div>
+        `;
+
+        // Nodemailer setup
         const transporter = nodemailer.createTransport({
             service: 'Gmail',
             auth: {
@@ -182,15 +86,25 @@ app.post('/api/send-email', async (req, res) => {
             }
         });
 
-        const mailOptions = {
+        // Send the first email to the customer
+        const customerMailOptions = {
             from: process.env.EMAIL_USER,
-            to: `${email}, georgechime91@icloud.com`,
+            to: email,
             subject: 'Order Confirmation',
-            html: emailBody // Send the HTML formatted email
+            html: customerEmailBody // Send the HTML formatted email to customer
         };
 
-        // Send the confirmation email
-        await transporter.sendMail(mailOptions);
+        // Send the second email to the admin (georgechime91@icloud.com)
+        const adminMailOptions = {
+            from: process.env.EMAIL_USER,
+            to: 'georgechime91@icloud.com',
+            subject: 'New Order',
+            html: adminEmailBody // Send the HTML formatted email to admin
+        };
+
+        // Send both emails
+        await transporter.sendMail(customerMailOptions);
+        await transporter.sendMail(adminMailOptions);
 
         res.status(200).json({ message: 'Order placed successfully! A confirmation email has been sent.', trackingId });
 
