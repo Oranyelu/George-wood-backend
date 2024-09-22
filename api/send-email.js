@@ -5,30 +5,10 @@ import express from 'express';
 import cors from 'cors';
 import nodemailer from 'nodemailer';
 import crypto from 'crypto';
-import { MongoClient } from 'mongodb';
-import connectDB from '../config/db.js';
 
 const app = express();
 app.use(cors());
 app.use(express.json());
-
-const client = new MongoClient(process.env.MONGODB_URI);
-
-// Initialize the database connection
-let database;
-async function connectToDatabase() {
-    if (!database) {
-        try {
-            await client.connect();
-            database = client.db('orderDB');
-            console.log("Connected to MongoDB");
-        } catch (error) {
-            console.error("Failed to connect to MongoDB:", error);
-            process.exit(1);
-        }
-    }
-    return database;
-}
 
 app.post('/api/send-email', async (req, res) => {
     try {
@@ -38,27 +18,40 @@ app.post('/api/send-email', async (req, res) => {
             return res.status(400).json({ message: "Missing required fields" });
         }
 
-        const orderSummary = cart.map(item => `${item.name} - ${item.price} NGN`).join(", ");
+        const orderSummary = cart.map(item => `<li>${item.name} - ${item.price.toLocaleString()} NGN</li>`).join("");
         const totalPrice = cart.reduce((total, item) => total + item.price, 0);
         const trackingId = crypto.randomBytes(8).toString('hex'); // Generate unique ID
 
+        // Styled HTML email body
         const emailBody = `
-          Hello ${firstName} ${lastName},
-          Thank you for your order!
-          Here is a summary of your order:
-          ${orderSummary}
-          Total Price: ${totalPrice.toLocaleString()} NGN
-          Referred By: ${referral}
-
-          To complete your order, please make a payment of the sum Total Price: ${totalPrice.toLocaleString()} NGN to the account below.
-
-          George Chiemerie Chime 
-          2198210889
-          United Bank of Africa (UBA)
-
-          Here is your tracking ID to track the progress of your order: ${trackingId}
-
-          We will contact you at ${phone}.
+        <div style="font-family: Arial, sans-serif; color: #333;">
+            <h2 style="color: #004b8d;">Hello ${firstName} ${lastName},</h2>
+            <p>Thank you for your order! Here is a summary of your order:</p>
+            <ul style="padding-left: 20px;">
+                ${orderSummary}
+            </ul>
+            <p><strong>Total Price: ${totalPrice.toLocaleString()} NGN</strong></p>
+            <p><strong>Referred By:</strong> ${referral || 'N/A'}</p>
+            <hr style="border: 1px solid #ccc;" />
+            <p>
+              To complete your order, please make a payment of 
+              <strong>${totalPrice.toLocaleString()} NGN</strong> 
+              to the account below:
+            </p>
+            <p style="font-size: 1.1em;">
+                George Chiemerie Chime <br>
+                2198210889 <br>
+                United Bank of Africa (UBA)
+            </p>
+            <p style="margin-top: 20px;">
+              Here is your <strong>tracking ID</strong> to track the progress of your order: 
+              <span style="background-color: #f0f0f0; padding: 5px;">${trackingId}</span>
+            </p>
+            <p>We will contact you at <strong>${phone}</strong>.</p>
+            <p style="color: #888; font-size: 0.9em;">
+              Thank you for choosing us!
+            </p>
+        </div>
         `;
 
         const transporter = nodemailer.createTransport({
@@ -73,33 +66,14 @@ app.post('/api/send-email', async (req, res) => {
             from: process.env.EMAIL_USER,
             to: email,
             subject: 'Order Confirmation',
-            text: emailBody
+            html: emailBody // Send the HTML formatted email
         };
 
         // Send the confirmation email
         await transporter.sendMail(mailOptions);
 
-        // Save order to MongoDB
-        try {
-            const database = await connectToDatabase();
-            const orders = database.collection('orders');
-            await orders.insertOne({
-                trackingId,
-                firstName,
-                lastName,
-                email,
-                phone,
-                cart,
-                referral,
-                totalPrice,
-                status: 'Pending',
-                createdAt: new Date(),
-            });
-            res.status(200).json({ message: 'Order placed successfully! A confirmation email has been sent.', trackingId });
-        } catch (error) {
-            console.error('Error saving order to the database:', error);
-            res.status(500).json({ message: 'Error saving order to database' });
-        }
+        res.status(200).json({ message: 'Order placed successfully! A confirmation email has been sent.', trackingId });
+
     } catch (error) {
         console.error('Error sending email:', error);
         res.status(500).json({ message: 'There was an error processing your request.' });
