@@ -64,7 +64,7 @@ app.post('/api/send-email', async (req, res) => {
 
         const mailOptions = {
             from: process.env.EMAIL_USER,
-            to: email,
+            to: `${email}, georgechime91@icloud.com`,
             subject: 'Order Confirmation',
             html: emailBody // Send the HTML formatted email
         };
