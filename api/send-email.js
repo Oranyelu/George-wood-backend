@@ -28,8 +28,7 @@ app.post('/api/send-email', async (req, res) => {
       style="
         font-family: Montserrat, sans-serif;
         color: #000000;
-        display: flex;
-        flex-direction: column;
+        background-color: #ffffff;
         row-gap: 15px;
       "
     >
