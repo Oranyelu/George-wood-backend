@@ -1,30 +1,15 @@
-import dotenv from 'dotenv';
-dotenv.config();
-
-import express from 'express';
-import cors from 'cors';
-import nodemailer from 'nodemailer';
-import crypto from 'crypto';
-
-const app = express();
-app.use(cors());
-app.use(express.json());
-
-app.post('/api/send-email', async (req, res) => {
-    try {
-        const { firstName, lastName, email, phone, cart, referral } = req.body;
-
-        if (!firstName || !lastName || !email || !phone || !cart) {
-            return res.status(400).json({ message: "Missing required fields" });
-        }
-
-        const orderSummary = cart.map(item => `<li>${item.name} - ${item.price.toLocaleString()} NGN</li>`).join("");
-        const totalPrice = cart.reduce((total, item) => total + item.price, 0);
-        const trackingId = crypto.randomBytes(8).toString('hex'); // Generate unique ID
-
-        // Styled HTML email body
-        const emailBody = `
-         <div
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <title>Document</title>
+  </head>
+  <body>
+    <div
       style="
         font-family: Montserrat, sans-serif;
         color: #000000;
@@ -156,7 +141,7 @@ app.post('/api/send-email', async (req, res) => {
       <section style="background-color: #135b3a; color: #fff; padding: 20px; margin-top: 15px;">
         <div  style="display: flex; flex-direction: row; justify-content: space-between;">
           <main>
-            <img src="../assets/footer logo George wood.png">
+            <img src="/assets/footer logo George wood.png" alt="">
             
           </main>
           <article style="font-size: 0.65rem;">Contact Us: <br>
@@ -173,35 +158,5 @@ app.post('/api/send-email', async (req, res) => {
         <footer style="display: flex; align-items: baseline; justify-content: center; font-size: 0.65rem;"><p>All Rights reserved George Wood Casket and Furniture 2024.</p></footer>
       </section>
     </div>
-        `;
-
-        const transporter = nodemailer.createTransport({
-            service: 'Gmail',
-            auth: {
-                user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASS
-            }
-        });
-
-        const mailOptions = {
-            from: process.env.EMAIL_USER,
-            to: `${email}, georgechime91@icloud.com`,
-            subject: 'Order Confirmation',
-            html: emailBody // Send the HTML formatted email
-        };
-
-        // Send the confirmation email
-        await transporter.sendMail(mailOptions);
-
-        res.status(200).json({ message: 'Order placed successfully! A confirmation email has been sent.', trackingId });
-
-    } catch (error) {
-        console.error('Error sending email:', error);
-        res.status(500).json({ message: 'There was an error processing your request.' });
-    }
-});
-
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
+  </body>
+</html>
