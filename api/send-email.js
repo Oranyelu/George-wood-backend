@@ -38,7 +38,6 @@ app.post('/api/send-email', async (req, res) => {
                 <b>Items:</b>
                 <ul>${orderSummary}</ul>
                 <p><strong>Total Price: ${totalPrice.toLocaleString()} NGN</strong></p>
-                <p><strong>Referred By:</strong> ${referral || 'N/A'}</p>
             </div>
             <div style="margin-top: 15px;">
                 <p>To complete your order, please make a payment of 
@@ -73,6 +72,7 @@ app.post('/api/send-email', async (req, res) => {
                 <p><strong>Items Ordered:</strong></p>
                 <ul>${orderSummary}</ul>
                 <p><strong>Total Price:</strong> ${totalPrice.toLocaleString()} NGN</p>
+                <p><strong>Referred By:</strong> ${referral || 'N/A'}</p>
             </div>
         </div>
         `;
