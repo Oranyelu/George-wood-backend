@@ -53,7 +53,7 @@ app.post('/api/send-email', async (req, res) => {
             <footer style="background-color: #135b3a; color: #fff; padding: 10px; margin-top: 15px; text-align: center;">
                 <p>Contact Us: <br />
                     Call - 08143904414 | Whatsapp - +2348143904414 | Email - georgewoodcasket@gmail.com <br />
-                    Address - No. 2 Umudo Street, Okwojo Ngwo Enugu.
+                    Address - 11 Senator Avenue, Opposite Milestone Hospital, Along Old Enugu-Onitsha Express Road. Okwojo Ngwo.
                 </p>
                 <p style="font-size: 0.8em;">&copy; 2024 George Wood Casket and Furniture. All Rights Reserved.</p>
             </footer>
@@ -73,6 +73,7 @@ app.post('/api/send-email', async (req, res) => {
                 <ul>${orderSummary}</ul>
                 <p><strong>Total Price:</strong> ${totalPrice.toLocaleString()} NGN</p>
                 <p><strong>Referred By:</strong> ${referral || 'N/A'}</p>
+                <p>Customers contact line: <strong>${phone}</strong>.</p>
             </div>
         </div>
         `;
